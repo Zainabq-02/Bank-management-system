@@ -1,15 +1,20 @@
-# accounts/views.py
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from .models import BankAccount
 from .serializers import BankAccountSerializer
+from rest_framework.permissions import IsAuthenticated
 
-class UserAccountsAPIView(APIView):
-    permission_classes = [IsAuthenticated]  # 🔒 Require login
+class AccountListCreateAPIView(ListCreateAPIView):
+    serializer_class = BankAccountSerializer
+    permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        # Only fetch accounts for the logged-in user
-        accounts = BankAccount.objects.filter(user=request.user)
-        serializer = BankAccountSerializer(accounts, many=True)
-        return Response(serializer.data)
+    def get_queryset(self):
+        # Show only current user's accounts
+        return BankAccount.objects.filter(user=self.request.user)
+
+class AccountDetailAPIView(RetrieveUpdateDestroyAPIView):
+    serializer_class = BankAccountSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Show only current user's accounts
+        return BankAccount.objects.filter(user=self.request.user)
